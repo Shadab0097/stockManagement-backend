@@ -1,0 +1,16 @@
+{
+  "name": "stockmanagement-backend",
+  "version": "1.0.0",
+  "description": "stock mangement system",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon src/app.js",
+    "start": "node src/app.js"
+  },
+  "author": "shadab khan",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
