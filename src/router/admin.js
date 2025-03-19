@@ -56,7 +56,8 @@ adminRouter.post('/admin/login', async (req, res) => {
         const findAdmin = await Admin.findOne({ adminEmailId: adminEmailId })
 
         if (!findAdmin) {
-            return res.status(404).json({ error: 'Admin not found' })
+            // res.status(400).send('User not found or not verified. Please verify your email first.')
+            return res.status(404).json('Admin not found')
         }
 
         const isAdminPasswordValid = await bcrypt.compare(adminPassword, findAdmin.adminPassword)
@@ -96,7 +97,7 @@ adminRouter.get('/admin/getalluser', adminAuth, async (req, res) => {
     try {
         const loggedInAdmin = req.loggedInAdmin
         const allUsers = await User.find({})
-        res.json({ allUsers })
+        res.json({ data: allUsers })
 
     } catch (err) {
         res.status(400).send("ERROR" + err.message)
@@ -108,7 +109,7 @@ adminRouter.patch('/admin/update/:userid', adminAuth, async (req, res) => {
         const { firstName, lastName, emailId, password } = req.body
         const { userid } = req.params
         const matchedUser = await User.findOne({ _id: userid })
-        console.log(matchedUser)
+        // console.log(matchedUser)
         if (!matchedUser) {
             throw new Error('User not found')
         }
@@ -139,6 +140,17 @@ adminRouter.get('/admin/getallsale', adminAuth, async (req, res) => {
 
     } catch (err) {
         res.status(400).send("ERROR" + err.message)
+    }
+})
+
+
+adminRouter.get("/admin/profile/view", adminAuth, async (req, res) => {
+    try {
+        const user = req.loggedInAdmin
+        res.send(user)
+
+    } catch (err) {
+        res.status(400).send("ERROR:" + err.message)
     }
 })
 module.exports = adminRouter

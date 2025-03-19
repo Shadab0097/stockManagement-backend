@@ -2,15 +2,15 @@ const express = require('express')
 const connectDB = require('./config/database')
 const app = express()
 const cookieParser = require("cookie-parser");
-// const cors = require('cors');
+const cors = require('cors');
 
 require("dotenv").config();
 
-// app.use(cors({
-//     origin: 'http://localhost:5173',
-//     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-//     credentials: true
-// }));
+app.use(cors({
+    origin: 'http://localhost:5173',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    credentials: true
+}));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -32,10 +32,6 @@ app.use('/', adminRouter);
 app.use('/', addUserRouter);
 app.use('/', productRouter);
 app.use('/', salesRouter);
-
-
-
-
 
 
 

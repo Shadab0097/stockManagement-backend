@@ -33,7 +33,7 @@ userRouter.post('/login', async (req, res) => {
 
             // send the cookie back to user
             res.cookie("token", token, { expires: new Date(Date.now() + 8 * 3600000) })
-            res.send(user)
+            res.json({ message: "user LoggedIn successfully", data: user })
         } else {
             throw new Error("invalid Credentials")
         }
@@ -47,20 +47,47 @@ userRouter.post('/logout', async (req, res) => {
 
     res.send('logout successfully')
 })
+// userRouter.get('/user/sale', userAuth, async (req, res) => {
+
+//     try {
+//         const loggedInUser = req.user
+//         const userSales = await Sale.find({ sellerId: loggedInUser._id })
+//         // console.log(userSales)
+//         if (!userSales) {
+//             throw new Error('No sales yet')
+//         }
+//         res.json({ userSales })
+
+//     } catch (err) {
+//         res.status(400).send("ERROR" + err.message)
+//     }
+// })
+
+
 userRouter.get('/user/sale', userAuth, async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
 
     try {
-        const loggedInUser = req.user
-        const userSales = await Sale.find({ sellerId: loggedInUser._id })
-        // console.log(userSales)
-        if (!userSales) {
-            throw new Error('No sales yet')
-        }
-        res.json({ userSales })
+        const userSales = await Sale.find({ sellerId: req.user.id })
+            .skip(skip)
+            .limit(limit);
+        res.json({ userSales });
+    } catch (err) {
+        res.status(500).send("ERROR" + err.message)
+    }
+});
+
+
+
+userRouter.get("/profile/view", userAuth, async (req, res) => {
+    try {
+        const user = req.user
+        res.send(user)
 
     } catch (err) {
-        res.status(400).send("ERROR" + err.message)
+        res.status(400).send("ERROR:" + err.message)
     }
 })
-
 module.exports = { userRouter }

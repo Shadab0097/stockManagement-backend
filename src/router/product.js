@@ -2,6 +2,7 @@ const express = require('express')
 const { validateProductData } = require('../utils/validator')
 const Product = require('../models/product')
 const adminAuth = require('../middlewares/adminAuth')
+const { userAuth } = require('../middlewares/userAuth')
 
 const productRouter = express.Router()
 
@@ -55,4 +56,44 @@ productRouter.post('/addproduct', adminAuth, async (req, res) => {
         }
     })
 
+productRouter.get("/admin/getallproduct", adminAuth, async (req, res) => {
+    try {
+
+
+        const findProduct = await Product.find({})
+        if (!findProduct) {
+            throw new Error("product not found")
+        }
+
+        res.json({
+            message: " all product",
+            data: findProduct
+        })
+
+    } catch (err) {
+        res.status(404).send('Error' + err.message)
+
+    }
+})
+
+
+productRouter.get("/getallproduct", userAuth, async (req, res) => {
+    try {
+
+
+        const findProduct = await Product.find({})
+        if (!findProduct) {
+            throw new Error("product not found")
+        }
+
+        res.json({
+            message: " all product",
+            data: findProduct
+        })
+
+    } catch (err) {
+        res.status(404).send('Error' + err.message)
+
+    }
+})
 module.exports = productRouter

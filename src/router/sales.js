@@ -9,15 +9,15 @@ const mongoose = require('mongoose')
 const salesRouter = express.Router()
 
 
-salesRouter.post('/sale/:productId/:mode', userAuth, async (req, res) => {
+salesRouter.post('/sale/:productId', userAuth, async (req, res) => {
 
     try {
-        const { productId, mode } = req.params
+        const { productId } = req.params
         const loggedInUser = req.user
         // validateProductData(req)
 
 
-        const { salesQuantity, emptyQuantity = 0, buyerName, buyerAddress } = req.body
+        const { salesQuantity, emptyQuantity = 0, buyerName, buyerAddress, mode } = req.body
 
 
         const allowedMode = ["online", "cash"]
@@ -48,7 +48,6 @@ salesRouter.post('/sale/:productId/:mode', userAuth, async (req, res) => {
         // Update stock and empty quantity
         product.stockQuantity -= salesQuantity
         product.emptyRecieved += emptyQuantity
-        await product.save()
 
 
         const sale = new Sale({
@@ -65,6 +64,8 @@ salesRouter.post('/sale/:productId/:mode', userAuth, async (req, res) => {
 
         })
 
+        await product.save()
+
 
 
         await sale.save()
@@ -76,36 +77,39 @@ salesRouter.post('/sale/:productId/:mode', userAuth, async (req, res) => {
 })
 
 
-salesRouter.get('/sales-summary/:productId', adminAuth, async (req, res) => {
+salesRouter.get('/sales-summary', adminAuth, async (req, res) => {
     try {
-        const { productId } = req.params
-
-        // 1. Total sales and payment for a single product
-        let singleProductSales = null
-        if (productId) {
-            singleProductSales = await Sale.aggregate([
-                { $match: { productId: new mongoose.Types.ObjectId(productId) } }, // Filter by productId
-                {
-                    $lookup: {
-                        from: 'products',
-                        localField: 'productId',
-                        foreignField: '_id',
-                        as: 'product'
-                    }
-                },
-                { $unwind: '$product' },
-                {
-                    $group: {
-                        _id: "$productId",
-                        productName: { $first: "$product.productName" },
-                        totalSales: { $sum: "$salesQuantity" },
-                        totalPayment: { $sum: { $multiply: ["$salesQuantity", "$product.productPrice"] } }
-                    }
+        // Fetch sales data for all products
+        const productSales = await Sale.aggregate([
+            {
+                $lookup: {
+                    from: 'products', // Join with the 'products' collection
+                    localField: 'productId',
+                    foreignField: '_id',
+                    as: 'product'
                 }
-            ])
-        }
+            },
+            { $unwind: '$product' }, // Unwind the joined product data
+            {
+                $group: {
+                    _id: "$productId", // Group by productId
+                    productName: { $first: "$product.productName" }, // Get the product name
+                    totalSales: { $sum: "$salesQuantity" }, // Total sales quantity for the product
+                    totalPayment: { $sum: { $multiply: ["$salesQuantity", "$product.productPrice"] } } // Total payment for the product
+                }
+            },
+            {
+                $project: {
+                    _id: 0, // Exclude the default _id field
+                    productId: "$_id", // Rename _id to productId
+                    productName: 1, // Include productName
+                    totalSales: 1, // Include totalSales
+                    totalPayment: 1 // Include totalPayment
+                }
+            }
+        ]);
 
-        // 2. Total sales and payment for all products
+        // Calculate total sales and payment across all products
         const totalSalesSummary = await Sale.aggregate([
             {
                 $lookup: {
@@ -118,22 +122,22 @@ salesRouter.get('/sales-summary/:productId', adminAuth, async (req, res) => {
             { $unwind: '$product' },
             {
                 $group: {
-                    _id: null,
-                    totalQuantity: { $sum: "$salesQuantity" },
-                    totalPayment: { $sum: { $multiply: ["$salesQuantity", "$product.productPrice"] } }
+                    _id: null, // Group all documents together
+                    totalQuantity: { $sum: "$salesQuantity" }, // Total sales quantity across all products
+                    totalPayment: { $sum: { $multiply: ["$salesQuantity", "$product.productPrice"] } } // Total payment across all products
                 }
             }
-        ])
+        ]);
 
         res.json({
-            singleProductSales: singleProductSales[0] || null,
-            totalSales: totalSalesSummary[0]?.totalQuantity || 0,
-            totalPayment: totalSalesSummary[0]?.totalPayment || 0
-        })
+            productSales, // Sales data for all products
+            totalSales: totalSalesSummary[0]?.totalQuantity || 0, // Total sales quantity across all products
+            totalPayment: totalSalesSummary[0]?.totalPayment || 0 // Total payment across all products
+        });
     } catch (err) {
-        res.status(400).json({ error: err.message })
+        res.status(400).json({ error: err.message });
     }
-})
+});
 
 salesRouter.get('/total-sales', adminAuth, async (req, res) => {
     try {
@@ -153,18 +157,28 @@ salesRouter.get('/total-sales', adminAuth, async (req, res) => {
                 $group: {
                     _id: null,
                     totalQuantity: { $sum: "$salesQuantity" }, // Sum of sales
-                    totalPayment: { $sum: { $multiply: ["$salesQuantity", "$product.productPrice"] } } // Use actual product price
+                    totalPayment: { $sum: { $multiply: ["$salesQuantity", "$product.productPrice"] } }, // Use actual product price
+                    totalProducts: { $addToSet: "$productId" } // Collect unique product IDs
+                }
+            },
+            {
+                $project: {
+                    _id: 0, // Exclude the default _id field
+                    totalQuantity: 1, // Include total sales quantity
+                    totalPayment: 1, // Include total payment
+                    totalProducts: { $size: "$totalProducts" } // Count unique products
                 }
             }
-        ])
+        ]);
 
         res.json({
             totalSales: totalSalesSummary[0]?.totalQuantity || 0,
-            totalPayment: totalSalesSummary[0]?.totalPayment || 0
-        })
+            totalPayment: totalSalesSummary[0]?.totalPayment || 0,
+            totalProducts: totalSalesSummary[0]?.totalProducts || 0
+        });
     } catch (err) {
-        res.status(400).json({ error: err.message })
+        res.status(400).json({ error: err.message });
     }
-})
+});
 
 module.exports = salesRouter
