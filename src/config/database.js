@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const connectDB = async () => {
-    await mongoose.connect("mongodb+srv://khanofficial7229:TNERy7AqHbaZAdMG@nodejs.ve5ge.mongodb.net/stockManagement")
+    await mongoose.connect(process.env.MONGODB_CLUSTER_URL)
 };
 
 
