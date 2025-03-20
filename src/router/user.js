@@ -32,7 +32,15 @@ userRouter.post('/login', async (req, res) => {
             const token = await jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" })
 
             // send the cookie back to user
-            res.cookie("token", token, { expires: new Date(Date.now() + 8 * 3600000) })
+            res.cookie("token", token, {
+                secure: true, // HTTPS only
+                sameSite: 'None', // Cross-site cookies
+                httpOnly: true, // Prevent XSS
+                path: '/', // Accessible across all routes
+                expires: new Date(Date.now() + 8 * 3600000) // Expires in 8 hours
+            })
+            // res.cookie("token", token, { expires: new Date(Date.now() + 8 * 3600000) })
+
             res.json({ message: "user LoggedIn successfully", data: user })
         } else {
             throw new Error("invalid Credentials")

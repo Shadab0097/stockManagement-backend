@@ -66,8 +66,13 @@ adminRouter.post('/admin/login', async (req, res) => {
 
             const adminToken = await jwt.sign({ _id: findAdmin._id }, process.env.ADMIN_JWT_SECRET, { expiresIn: '1d' })
 
-            res.cookie('adminToken', adminToken, { expires: new Date(Date.now() + 8 * 3600000) })
-
+            res.cookie('adminToken', adminToken, {
+                secure: true, // HTTPS only
+                sameSite: 'None', // Cross-site cookies
+                httpOnly: true, // Prevent XSS
+                path: '/', // Accessible across all routes
+                expires: new Date(Date.now() + 8 * 3600000) // Expires in 8 hours
+            });
             res.json({
                 message: 'admin loggedIn succesfully', data: {
                     adminFirstName: findAdmin.firstName,
