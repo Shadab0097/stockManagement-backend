@@ -7,7 +7,7 @@ const cors = require('cors');
 require("dotenv").config();
 
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: 'https://stock-management-on4ggmh0t-shadabs-projects-9be667ba.vercel.app/',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true
 }));
