@@ -7,7 +7,7 @@ const cors = require('cors');
 require("dotenv").config();
 
 app.use(cors({
-    origin: '"https://stock-management-black.vercel.app',
+    origin: 'https://stock-management-black.vercel.app',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
