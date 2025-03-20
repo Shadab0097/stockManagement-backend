@@ -7,7 +7,9 @@ const cors = require('cors');
 require("dotenv").config();
 
 app.use(cors({
-    origin: ' http://localhost:5173',
+    // origin: ' http://localhost:5173',
+    origin: 'https://stock-management-kappa-ten.vercel.app',
+
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
