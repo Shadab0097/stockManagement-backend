@@ -14,6 +14,8 @@ app.use(cors({
 
 }));
 
+app.options('*', cors());
+
 // app.use(
 //     cors({
 //         origin: 'https://stock-management-black.vercel.app', // Frontend URL
