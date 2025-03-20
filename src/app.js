@@ -7,7 +7,7 @@ const cors = require('cors');
 require("dotenv").config();
 
 app.use(cors({
-    origin: 'https://stock-management-black.vercel.app',
+    origin: ' http://localhost:5173/',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -16,14 +16,7 @@ app.use(cors({
 
 app.options('*', cors());
 
-// app.use(
-//     cors({
-//         origin: 'https://stock-management-black.vercel.app', // Frontend URL
-//         credentials: true, // Allow cookies and credentials
-//         methods: 'GET,POST,PUT,DELETE,OPTIONS',
-//         allowedHeaders: 'Content-Type,Authorization'
-//     })
-// );
+
 app.use(express.json());
 app.use(cookieParser());
 
