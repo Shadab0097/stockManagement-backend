@@ -1,12 +1,25 @@
 {
     "version": 2,
     "builds": [
-        { "src": "src/app.js", "use": "@vercel/node" }
+      { "src": "src/app.js", "use": "@vercel/node" }
     ],
     "routes": [
-        {
-            "src": "/(.*)",
-            "dest": "src/app.js"
-        }
+    
+      {
+        "src": "/(login|logout)",
+        "dest": "src/app.js",
+        "headers": { "Cache-Control": "no-store" }
+      },
+    
+      {
+        "src": "/admin/(login|logout)",
+        "dest": "src/app.js",
+        "headers": { "Cache-Control": "no-store" }
+      },
+   
+      {
+        "src": "/src/.*",
+        "status": 403
+      }
     ]
-}
+  }
