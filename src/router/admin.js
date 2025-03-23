@@ -93,7 +93,12 @@ adminRouter.post('/admin/login', async (req, res) => {
 
 adminRouter.post('/admin/logout', async (req, res) => {
 
-    res.cookie('adminToken', null, { expires: new Date(Date.now()) })
+    res.cookie('adminToken', null, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'None',
+        expires: new Date(0)
+    })
 
     res.send('admin logout successfully')
 })
